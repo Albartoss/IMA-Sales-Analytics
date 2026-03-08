@@ -8,7 +8,7 @@ A desktop application that automates inventory tracking and predicts future sale
 
 ## 🎯 Real-World Pilot Result
 
-Deployed at a local grocery store in Izmir, Turkey. Live sales and inventory data was collected over 3 months:
+Deployed at a local grocery store in Manisa, Turkey. Live sales and inventory data was collected over 3 months:
 
 | Month | Profitability Change (vs. same period prior year) |
 |-------|--------------------------------------------------|
