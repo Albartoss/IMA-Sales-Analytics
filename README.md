@@ -1,69 +1,89 @@
-===========================================================================
-PROJECT: INVENTORY MANAGEMENT ASSISTANT WITH SALES & PROFITABILITY ANALYSIS
-===========================================================================
+# IMA-Sales-Analytics
 
-DEVELOPER INFORMATION:
-----------------------
-Name-Surname     : Yigit Ayik
-Degree           : B.Sc. Software Engineering
-Institution      : National Technical University of Ukraine "KPI" (2025)
-Project Advisor  : Assoc. Prof. Volodymyr Shymkovych
+**Inventory Management Assistant Using Learning Technologies for Sales and Profitability Analysis**
 
-1. PROJECT OVERVIEW
--------------------
-This project is an end-to-end software solution designed to modernize inventory
-tracking and optimize business decision-making through predictive analytics. 
-The system integrates traditional stock management with machine learning-based 
-forecasting models to predict future sales trends and profitability.
+A desktop application that automates inventory tracking and predicts future sales trends using machine learning forecasting models. Developed as a graduation thesis project at Igor Sikorsky Kyiv Polytechnic Institute — defended with a grade of **92/100 (Excellent)**.
 
-2. CORE FUNCTIONALITIES
------------------------
-- Automated Inventory Tracking: Real-time stock updates and barcode integration.
-- Predictive Analytics: Future demand forecasting using Prophet and ARIMA models.
-- Financial Reporting: Detailed profitability analysis and sales trend visualization.
-- Multi-User System: Role-Based Access Control (Admin, Owner, Worker).
-- Localization: Multi-language support (English, Turkish, Ukrainian).
+---
 
-3. TECHNICAL SPECIFICATIONS
----------------------------
-- Programming Language  : Python 3.10+
-- Graphical User Interface: PyQt5
-- Database Management    : SQLite3 (Structured Query Language)
-- Data Science Libraries : Pandas, NumPy, Scikit-learn
-- Forecasting Engines    : Facebook Prophet, Statsmodels (ARIMA)
-- Visualization          : Plotly, Matplotlib
+## 🎯 Real-World Pilot Result
 
-4. SYSTEM ARCHITECTURE
-----------------------
-The software follows a Layered Architectural Pattern to ensure scalability:
-- UI Layer       : Handles user interactions and data presentation.
-- Business Layer : Processes inventory logic and runs ML algorithms.
-- Data Layer     : Manages persistent storage and database queries.
+Deployed at a local grocery store in Izmir, Turkey. Live sales and inventory data was collected over 3 months:
 
-5. IMPLEMENTED ML MODELS
-------------------------
-- Prophet Model : Applied for handling long-term seasonality and holiday effects.
-- ARIMA Model   : Implemented for short-term statistical time-series forecasting.
-The combination of these models provides a robust decision-support mechanism 
-for stock optimization.
+| Month | Profitability Change (vs. same period prior year) |
+|-------|--------------------------------------------------|
+| Month 1 | +4% |
+| Month 2 | +9% |
+| Month 3 | +22% |
 
-6. HOW TO DEPLOY
-----------------
-1. Ensure Python 3.10 or higher is installed.
-2. Install dependencies: 'pip install -r requirements.txt'
-3. Execute the application: 'python main.py'
+The thesis defense was extended into a **30-minute Q&A session** due to panel interest.
 
-7. ACADEMIC CONTEXT
--------------------
-This system was developed as a Bachelor’s Graduation Project in the 
-"Computer Systems Software Engineering" department. It was formally 
-defended and approved by the Faculty of Informatics and Computer Engineering 
-at NTUU "Igor Sikorsky Kyiv Polytechnic Institute" in 2025.
+---
 
----------------------------------------------------------------------------
-For further technical inquiries, please refer to the full PDF documentation.
-===========================================================================
+## 🔧 Tech Stack
 
-Admin account: Yigit - 3535
-Owner account: Owner - 123
-Personal account: Personal - 123
+- **Language:** Python
+- **GUI:** PyQt5
+- **Forecasting:** Facebook Prophet, ARIMA
+- **Database:** SQLite
+- **Data Visualization:** Plotly
+- **Data Processing:** Pandas, NumPy, Scikit-learn
+
+---
+
+## ✨ Features
+
+- End-to-end inventory tracking and management
+- Demand forecasting using Facebook Prophet and ARIMA models
+- Interactive sales and profitability dashboards (Plotly)
+- Relational database design for products, sales, and stock records
+- Data export to CSV and XLSX formats
+- Desktop installer via Inno Setup
+
+---
+
+## 🚀 Installation
+
+### Requirements
+
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+### Run
+```bash
+python main.py
+```
+
+Or use `start_app.bat` on Windows.
+
+---
+
+## 📁 Project Structure
+```
+IMA-Sales-Analytics/
+├── main.py              # Application entry point
+├── modules/             # Core application modules
+├── database/            # SQLite database
+├── images/              # UI assets
+├── requirements.txt     # Python dependencies
+└── start_app.bat        # Windows launcher
+```
+
+---
+
+## 🎓 Academic Context
+
+- **Institution:** National Technical University of Ukraine "Igor Sikorsky Kyiv Polytechnic Institute"
+- **Programme:** Computer Systems Software Engineering (Specialty 121)
+- **Degree:** Bachelor of Science in Software Engineering
+- **Thesis Grade:** 92/100 (Excellent)
+- **Year:** 2025
+
+---
+
+## 👤 Author
+
+**Yigit Ayik**
+[LinkedIn](https://www.linkedin.com/in/yiğit-ayık) · [GitHub](https://github.com/Albartoss)
