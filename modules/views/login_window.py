@@ -35,6 +35,12 @@ def create_user_table():
     if "owner_id" not in columns:
         cursor.execute("ALTER TABLE users ADD COLUMN owner_id INTEGER")
 
+    if "theme" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'Varsayılan'")
+
+    if "only_self_sales" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN only_self_sales INTEGER DEFAULT 0")
+
     cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'Yigit'")
     if cursor.fetchone()[0] == 0:
         cursor.execute("""

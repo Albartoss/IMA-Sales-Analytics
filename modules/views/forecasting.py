@@ -12,7 +12,7 @@ class FilteredForecastWindow(QDialog):
         super().__init__()
         self.t = Translator()
         self.setWindowTitle(self.t.tr("forecast.filtered_title"))
-        self.setFixedSize(320, 180)
+        self.setFixedSize(320, 220)
 
         self.layout = QFormLayout()
         self.product_dropdown = QComboBox()
@@ -27,6 +27,12 @@ class FilteredForecastWindow(QDialog):
             QMessageBox.critical(self, self.t.tr("error.title"), self.t.tr("forecast.load_error").format(error=str(e)))
             self.close()
 
+        # FIX: Kullanıcı tahmin penceresini seçebilsin
+        self.periods_dropdown = QComboBox()
+        for label, val in [("14 Gün", 14), ("30 Gün", 30), ("60 Gün", 60), ("90 Gün", 90)]:
+            self.periods_dropdown.addItem(label, val)
+        self.periods_dropdown.setCurrentIndex(1)  # default: 30 gün
+
         self.forecast_btn = QPushButton(self.t.tr("forecast.button"))
         self.forecast_btn.clicked.connect(self.show_forecast)
 
@@ -34,24 +40,26 @@ class FilteredForecastWindow(QDialog):
         self.save_html_btn.clicked.connect(self.save_html)
 
         self.layout.addRow(self.t.tr("forecast.select_product"), self.product_dropdown)
+        self.layout.addRow("Tahmin Penceresi:", self.periods_dropdown)
         self.layout.addRow(self.forecast_btn)
         self.layout.addRow(self.save_html_btn)
         self.setLayout(self.layout)
 
-        self.last_fig = None  # Son oluşturulan figürü sakla
+        self.last_fig = None
 
     def show_forecast(self):
         product_name = self.product_dropdown.currentText()
-        result = get_forecast_with_arima(product_name)
+        periods = self.periods_dropdown.currentData()  # FIX: seçilen değeri al
+
+        result = get_forecast_with_arima(product_name, periods=periods)
         if not result or result[0] is None or result[6] is None:
             QMessageBox.warning(self, self.t.tr("warning.title"), self.t.tr("forecast.no_data"))
             self.last_fig = None
             return
 
         df_prophet, forecast, mae_prophet, rmse_prophet, mae_arima, rmse_arima, fig = result
-        self.last_fig = fig  # figürü sakla
+        self.last_fig = fig
 
-        # Geçici dosya ile ön izleme
         with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_html:
             fig.write_html(tmp_html.name)
             html_path = tmp_html.name

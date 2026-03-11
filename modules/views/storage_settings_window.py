@@ -51,10 +51,12 @@ class ProductStorageSettingsWindow(QDialog):
 
     def load_locations(self, location_type_text):
         try:
+            # shelves/fridges tablolarını kullan — storage_units yok
             location_type = "shelf" if location_type_text == _("storage_settings.shelf") else "fridge"
+            table = "shelves" if location_type == "shelf" else "fridges"
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name FROM storage_units WHERE type = ?", (location_type,))
+            cursor.execute(f"SELECT id, name FROM {table}")
             locations = cursor.fetchall()
             conn.close()
             self.location_id.clear()
@@ -69,14 +71,26 @@ class ProductStorageSettingsWindow(QDialog):
             location_type_text = self.location_type.currentText()
             location_type = "shelf" if location_type_text == _("storage_settings.shelf") else "fridge"
             location_id = self.location_id.currentData()
-            unit_volume = float(self.unit_volume_input.text())
+
+            # unit_volume boş bırakılabilir
+            vol_text = self.unit_volume_input.text().strip()
+            unit_volume = float(vol_text) if vol_text else None
 
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
+
+            # product_storage_links — ai_suggestion_engine ve reorder_advisor ile aynı tablo
             cursor.execute("""
-                INSERT INTO product_storage_settings (product_id, location_type, location_id, unit_volume)
-                VALUES (?, ?, ?, ?)
-            """, (product_id, location_type, location_id, unit_volume))
+                INSERT OR REPLACE INTO product_storage_links (product_id, storage_type, storage_id)
+                VALUES (?, ?, ?)
+            """, (product_id, location_type, location_id))
+
+            # unit_volume varsa products tablosunu güncelle
+            if unit_volume is not None:
+                cursor.execute("""
+                    UPDATE products SET unit_volume = ? WHERE product_id = ?
+                """, (unit_volume, product_id))
+
             conn.commit()
             conn.close()
 

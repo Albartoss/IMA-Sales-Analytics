@@ -1,0 +1,46 @@
+product_id,product_name,brand,category,cost_price,selling_price,expiry_date,discount_price,discount_until
+1,Tam Yağlı Süt 1L,Sek,Süt Ürünleri,6.5,10.9,2025-07-01,,2025-05-08
+2,Yarım Yağlı Süt 1L,İçim,Süt Ürünleri,6.0,10.5,2025-07-01,9.17,
+3,Kaşar Peyniri 400g,Pınar,Süt Ürünleri,38.0,59.9,2025-08-30,,2025-07-02
+4,Beyaz Peynir 500g,Sütaş,Süt Ürünleri,32.0,52.9,2025-08-30,43.48,
+5,Yoğurt 1kg,Danone,Süt Ürünleri,9.5,16.9,2025-07-01,13.86,
+6,Tereyağı 250g,Tariş,Süt Ürünleri,22.0,36.9,2025-07-31,,2025-10-09
+7,Ekmek,Unlu,Unlu Mamul,3.5,6.5,2025-06-02,,2025-07-11
+8,Tost Ekmeği,Uno,Unlu Mamul,8.0,14.9,2025-06-04,13.35,
+9,Simit,Simit Sarayı,Unlu Mamul,2.0,4.0,2025-06-02,,
+10,Makarna 500g,Barilla,Bakliyat,8.5,14.9,2026-05-27,,2025-01-24
+11,Pirinç 1kg,Baldo,Bakliyat,14.0,22.9,2026-05-27,,2025-07-03
+12,Nohut 1kg,Ülker,Bakliyat,12.0,19.9,2026-05-27,,
+13,Kırmızı Mercimek 1kg,Paket,Bakliyat,10.5,17.9,2026-05-27,,
+14,Zeytinyağı 1L,Tariş,Yağlar,55.0,89.9,2026-11-23,,
+15,Ayçiçek Yağı 1L,Yudum,Yağlar,28.0,45.9,2026-05-27,37.77,2025-02-28
+16,Ketçap 300g,Tamek,Soslar,12.0,19.9,2026-02-26,16.12,2025-11-27
+17,Mayonez 250g,Hellmann's,Soslar,15.0,24.9,2025-11-28,,
+18,Domates Salçası 700g,Tukaş,Soslar,18.0,29.9,2026-05-27,24.72,
+19,Cola 1L,Coca-Cola,İçecekler,8.0,14.9,2026-02-26,,
+20,Ayran 200ml,Sütaş,İçecekler,3.5,6.5,2025-07-01,5.67,2025-07-09
+21,Meyve Suyu 1L,Cappy,İçecekler,14.0,22.9,2026-02-26,,
+22,Su 1.5L,Erikli,İçecekler,3.0,5.5,2027-05-22,,
+23,Çay 500g,Çaykur,Kuru Gıda,28.0,45.9,2026-11-23,,
+24,Kahve 200g,Nescafé,Kuru Gıda,45.0,72.9,2026-05-27,58.55,
+25,Şeker 1kg,Torku,Kuru Gıda,16.0,26.9,2026-11-23,22.09,
+26,Tuz 750g,Pınar,Kuru Gıda,4.0,7.9,2027-05-22,,
+27,Un 1kg,Güllüoğlu,Kuru Gıda,9.0,15.9,2026-05-27,,
+28,Çikolata 100g,Ülker,Atıştırmalık,10.0,16.9,2026-02-26,,
+29,Cips 100g,Lay's,Atıştırmalık,8.5,14.9,2025-11-28,12.29,
+30,Bisküvi 200g,Eti,Atıştırmalık,7.0,12.9,2026-02-26,11.07,
+31,Domates (kg),Taze,Sebze/Meyve,8.0,14.9,2025-06-05,,
+32,Salatalık (kg),Taze,Sebze/Meyve,6.0,10.9,2025-06-03,,2025-01-28
+33,Patates (kg),Taze,Sebze/Meyve,7.0,12.9,2025-07-01,11.13,
+34,Soğan (kg),Taze,Sebze/Meyve,5.0,8.9,2025-07-31,,2025-07-20
+35,Muz (kg),Taze,Sebze/Meyve,18.0,29.9,2025-06-05,,
+36,Elma (kg),Taze,Sebze/Meyve,12.0,19.9,2025-07-01,,2025-12-04
+37,Portakal (kg),Taze,Sebze/Meyve,10.0,16.9,2025-07-01,,
+38,Tavuk Göğsü (kg),Banvit,Et/Şarküteri,68.0,109.9,2025-06-04,,
+39,Sucuk 200g,İnci,Et/Şarküteri,28.0,44.9,2025-07-31,36.63,2025-12-24
+40,Salam 200g,Banvit,Et/Şarküteri,22.0,36.9,2025-07-31,31.37,2025-02-28
+41,Yumurta (10'lu),Aytaç,Yumurta,18.0,29.9,2025-07-01,,
+42,Deterjan 3kg,Omo,Temizlik,65.0,104.9,2026-11-23,,2025-06-25
+43,Bulaşık Deterjanı 750ml,Fairy,Temizlik,28.0,44.9,2026-11-23,40.2,
+44,Tuvalet Kağıdı 24'lü,Selpak,Temizlik,72.0,114.9,2027-05-22,,
+45,Şampuan 400ml,Head&Shoulders,Kişisel Bakım,38.0,59.9,2026-11-23,,2025-06-27

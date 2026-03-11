@@ -11,27 +11,57 @@ from modules.config import DB_PATH
 conn = sqlite3.connect(DB_PATH)
 df_sales = pd.read_sql_query("SELECT date, product_id, quantity_sold FROM sales", conn)
 df_products = pd.read_sql_query("SELECT * FROM products", conn)
-df_stock = pd.read_sql_query("SELECT product_id, quantity FROM stock_transactions", conn)
+df_stock = pd.read_sql_query("SELECT product_id, date, quantity FROM stock_transactions", conn)
 df_links = pd.read_sql_query("SELECT * FROM product_storage_links", conn)
 df_shelves = pd.read_sql_query("SELECT id, max_capacity FROM shelves", conn)
 df_fridges = pd.read_sql_query("SELECT id, max_capacity FROM fridges", conn)
 conn.close()
 
-today = pd.Timestamp.today()
 df_sales["date"] = pd.to_datetime(df_sales["date"], errors="coerce")
+df_stock["date"] = pd.to_datetime(df_stock["date"], errors="coerce")
 df_products["discount_until"] = pd.to_datetime(df_products["discount_until"], errors="coerce")
+
+# FIX 1: today = verinin son tarihi, gerçek saat değil.
+# Böylece 2024-12-31'de biten veri için tahmin 2025-01-xx'e uzanır,
+# ~15 aylık boşluk kaybolur ve Prophet saçmalamaz.
+data_end = df_sales["date"].max()
+today = data_end
 
 df_daily = df_sales.groupby("date")["quantity_sold"].sum().reset_index()
 df_prophet = df_daily.rename(columns={"date": "ds", "quantity_sold": "y"})
 
-model = Prophet(daily_seasonality=True, interval_width=0.6)
-model.fit(df_prophet)
+# FIX 2: Son 365 günü kullan. 2 yıl veride trendin ağırlığı
+# çok artar; kısa pencere mevsimselliği daha temiz yakalar.
+cutoff = data_end - pd.Timedelta(days=365)
+df_prophet_fit = df_prophet[df_prophet["ds"] >= cutoff].copy()
+
+model = Prophet(
+    daily_seasonality=False,   # FIX 3: Günlük seasonality gereksiz gürültü ekler,
+    weekly_seasonality=True,   # haftalık (Cuma/hafta sonu boostları) yeterli.
+    yearly_seasonality=True,
+    seasonality_mode="multiplicative",  # FIX 4: Satışlar çarpımsal büyür (Ramazan x%, hafta sonu x%).
+    interval_width=0.8,        # FIX 5: 0.6 çok dar, güven aralığını 0.8'e çektik.
+    changepoint_prior_scale=0.1  # FIX 6: Ani trend değişimlerine daha duyarlı.
+)
+model.fit(df_prophet_fit)
 
 future = model.make_future_dataframe(periods=30)
 forecast = model.predict(future)
-forecast_30 = forecast[(forecast["ds"] > df_prophet["ds"].max()) & (forecast["ds"] <= today + pd.Timedelta(days=30))]
+
+# FIX 7: Filtre artık data_end'e göre, today (Mart 2026) değil.
+forecast_30 = forecast[
+    (forecast["ds"] > data_end) &
+    (forecast["ds"] <= data_end + pd.Timedelta(days=30))
+].copy()
+
+forecast_30["yhat"] = forecast_30["yhat"].clip(lower=0)
+forecast_30["yhat_upper"] = forecast_30["yhat_upper"].clip(lower=0)
+forecast_30["yhat_lower"] = forecast_30["yhat_lower"].clip(lower=0)
+
 total_forecast_qty = forecast_30["yhat"].sum()
 
+# FIX 8: Stok = toplam giriş - toplam satış.
+# Önceki kodda sadece giriş toplanıyordu, satış düşülmüyordu.
 df_sales_sum = df_sales.groupby("product_id")["quantity_sold"].sum().reset_index()
 df_stock_sum = df_stock.groupby("product_id")["quantity"].sum().reset_index()
 
@@ -39,6 +69,7 @@ df_summary = pd.merge(df_products, df_sales_sum, on="product_id", how="left").fi
 df_summary = pd.merge(df_summary, df_stock_sum, on="product_id", how="left").fillna(0).infer_objects()
 df_summary = pd.merge(df_summary, df_links, on="product_id", how="left")
 df_summary["current_stock"] = df_summary["quantity"] - df_summary["quantity_sold"]
+df_summary["current_stock"] = df_summary["current_stock"].clip(lower=0)  # negatif stok mantıksız
 
 mask = (
     pd.notna(df_summary["discount_price"]) &
@@ -51,7 +82,16 @@ df_summary.loc[mask, "effective_price"] = df_summary.loc[mask, "discount_price"]
 for col in ["effective_price", "cost_price", "quantity_sold", "quantity", "unit_volume"]:
     df_summary[col] = pd.to_numeric(df_summary[col], errors="coerce").fillna(1.0 if col == "unit_volume" else 0.0)
 
-df_summary["weight"] = df_summary["quantity_sold"] / df_summary["quantity_sold"].sum()
+# FIX 9: Ürün bazlı ağırlık sadece son 90 günün satışına göre hesaplanıyor.
+# Tüm zamanın toplamı mevsimsel sapmaları gizler; kısa pencere daha gerçekçi.
+recent_cutoff = data_end - pd.Timedelta(days=90)
+df_recent_sales = df_sales[df_sales["date"] >= recent_cutoff]
+df_recent_sum = df_recent_sales.groupby("product_id")["quantity_sold"].sum().reset_index()
+df_recent_sum.columns = ["product_id", "recent_qty"]
+df_summary = pd.merge(df_summary, df_recent_sum, on="product_id", how="left").fillna(0)
+
+total_recent = df_summary["recent_qty"].sum()
+df_summary["weight"] = df_summary["recent_qty"] / total_recent if total_recent > 0 else 1 / len(df_summary)
 df_summary["forecasted_qty"] = df_summary["weight"] * total_forecast_qty
 df_summary["shortage"] = (df_summary["forecasted_qty"] - df_summary["current_stock"]).apply(lambda x: x if x > 0 else 0)
 
@@ -84,9 +124,9 @@ volume_issues = df_summary[df_summary["volume_overload"] == True]
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
-    x=df_prophet["ds"], y=df_prophet["y"],
+    x=df_prophet_fit["ds"], y=df_prophet_fit["y"],
     mode='lines+markers',
-    name='Gerçek Satış',
+    name='Gerçek Satış (Son 365 Gün)',
     line=dict(color='royalblue')
 ))
 
@@ -132,7 +172,7 @@ if not volume_issues.empty:
     )
 
 fig.update_layout(
-    title="📈 Toplam Satış Tahmini – Gelecek 30 Gün",
+    title=f"📈 Toplam Satış Tahmini – Gelecek 30 Gün (Baz: {data_end.strftime('%Y-%m-%d')})",
     xaxis_title="Tarih",
     yaxis_title="Satış Adedi",
     legend=dict(x=0.01, y=0.99),
@@ -143,6 +183,7 @@ html_path = os.path.join(os.getcwd(), "forecast_plot.html")
 pio.write_html(fig, file=html_path, auto_open=False)
 
 print("30 Günlük Tahmin:")
+print(f"  • Baz Tarih: {data_end.strftime('%Y-%m-%d')}")
 print(f"  • Beklenen Toplam Satış: {total_forecast_qty:.0f} adet")
 print(f"  • Beklenen Gelir: {total_revenue:.2f} TL")
 print(f"  • Beklenen Kâr: {total_profit:.2f} TL")

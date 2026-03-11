@@ -43,7 +43,12 @@ class ProductLocationLinker(QDialog):
     def load_locations(self):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name, 'shelf' as type FROM shelves UNION ALL SELECT id, name, 'fridge' FROM fridges")
+        # shelves ve fridges birleştir — storage_units yok
+        cursor.execute("""
+            SELECT id, name, 'shelf' AS type FROM shelves
+            UNION ALL
+            SELECT id, name, 'fridge' AS type FROM fridges
+        """)
         self.locations = cursor.fetchall()
         for lid, name, typ in self.locations:
             label = f"{self.t.tr('product_link.type.' + typ)} #{lid} - {name}"
@@ -52,23 +57,20 @@ class ProductLocationLinker(QDialog):
 
     def save_link(self):
         product_id = self.product_dropdown.currentData()
-        location_id, location_type = self.location_dropdown.currentData()
+        location_data = self.location_dropdown.currentData()
+        if not location_data:
+            QMessageBox.warning(self, self.t.tr("warning.title"), self.t.tr("product_link.select_location"))
+            return
+        location_id, location_type = location_data
 
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
+            # ai_suggestion_engine, reorder_advisor, shelf_placement ile aynı tablo
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS product_locations (
-                    product_id INTEGER,
-                    location_id INTEGER,
-                    location_type TEXT,
-                    PRIMARY KEY (product_id)
-                )
-            """)
-            cursor.execute("""
-                INSERT OR REPLACE INTO product_locations (product_id, location_id, location_type)
+                INSERT OR REPLACE INTO product_storage_links (product_id, storage_type, storage_id)
                 VALUES (?, ?, ?)
-            """, (product_id, location_id, location_type))
+            """, (product_id, location_type, location_id))
             conn.commit()
             conn.close()
             QMessageBox.information(self, self.t.tr("success.title"), self.t.tr("product_link.success"))

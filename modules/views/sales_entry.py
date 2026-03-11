@@ -200,23 +200,28 @@ class AddSaleWindow(QDialog):
         discount = float(discount_text) if discount_text and discount_text.replace(".", "").isdigit() else 0.0
 
         try:
-            conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(DB_PATH, timeout=10)
+            conn.execute("PRAGMA journal_mode=WAL")
             cursor = conn.cursor()
 
-            cursor.execute("SELECT product_id FROM products")
-            all_products = [row[0] for row in cursor.fetchall()]
-            sold_products = {pid: qty for pid, qty, _ in self.sale_list}
-
             total_amount = 0.0
-            for pid in all_products:
-                qty = sold_products.get(pid, 0)
-                price_used = next((p for p_pid, _, p in self.sale_list if p_pid == pid), 0)
-                cursor.execute("""
-                    INSERT INTO sales (date, product_id, quantity_sold, user_id)
-                    VALUES (?, ?, ?, ?)
-                """, (date, pid, qty, self.user_id))
-                total_amount += qty * price_used
+            # Sadece sepetteki urunleri insert et — tum 45 urunu degil
+            for pid, qty, price_used in self.sale_list:
+                if qty > 0:
+                    cursor.execute("""
+                        INSERT INTO sales (date, product_id, quantity_sold, user_id)
+                        VALUES (?, ?, ?, ?)
+                    """, (date, pid, qty, self.user_id))
+                    total_amount += qty * float(price_used)
 
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS sales_summary (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    user_id INTEGER,
+                    total_sales REAL DEFAULT 0.0
+                )
+            """)
             cursor.execute("""
                 INSERT INTO sales_summary (date, user_id, total_sales)
                 VALUES (?, ?, ?)
@@ -231,7 +236,7 @@ class AddSaleWindow(QDialog):
                 f"{t.tr('sale.net_amount')}: {total_amount - discount:.2f}{t.currency_symbol}\n"
                 f"{t.tr('form.payment_type')}: {payment_type}"
             )
-
+            self.clear_list()
             self.close()
 
         except Exception as e:
